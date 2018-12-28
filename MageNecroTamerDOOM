@@ -1,0 +1,60 @@
+//cria lista dos boss com graphic
+if not listexists 'hboss'
+  createlist 'hboss'
+  pushlist 'hboss' 0x13e // Dark Father
+  pushlist 'hboss' 0x139 // Darknight Creeper
+  pushlist 'hboss' 0x13b // Fleshrenderer
+  pushlist 'hboss' 0x132 // Impaler
+  pushlist 'hboss' 0x137 // Shadow Knight
+  pushlist 'hboss' 0x138 // Abyssmal Horror
+endif
+//cria lista pra pegar serial dos boss da lista acima
+if listexists 'lista'
+  clearlist 'lista'
+else
+  createlist 'lista'
+endif
+for 0 in 'hboss'
+  while @findtype hboss[] 'any' and not dead hboss[]
+    pushlist 'lista' 'found'
+    ignoreobject 'found'
+  endwhile
+endfor
+clearignorelist
+//desmontar, transformar, mandar pet atacar boss com o serial da lista(sem loop). Enquanto  dentro do alcance de 10 tiles ele não estiver morto ataca com magia fireball e magic arrow. (com loop).
+for 0 in 'lista'
+  if mounted 'self' and not buffexists 'wraith form'
+    cast 'wraith form'
+    pause 2000
+    msg 'all kill'
+    waitingfortarget 500
+    target! 'lista'
+    pause 300
+  endif
+  while @inrange lista[] '10' and not dead lista[]
+    pause 1000
+    cast "fireball"
+    waitfortarget 1700
+    target! 'lista[]'
+    cast "Magic Arrow"
+    waitfortarget 1000
+    target! 'lista[]'
+  endwhile
+endfor
+//se estiver poison cura e heala
+if poisoned or diffhits > 20
+  miniheal 'self'
+endif
+//detecta se o boss esta morto, destransforma e casta invisibilidade até a chegada do proximo boss
+if not @findtype hboss[] 'any' and not dead hboss[] and buffexists 'wraith form' and not mounted 'self'
+  msg 'all come'
+  pause 200
+  cast 'wraith form'
+  pause 2000
+  togglemounted
+  pause 1000
+endif
+if not buffexists 'Invisibility' and not findobject 'lista'
+  cast 'Invisibility' 'self'
+  waitforjournal 'disturbed' 4200 'system'
+endif
